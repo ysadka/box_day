@@ -14,7 +14,7 @@ gem 'iron_mq'
 gem 'iron_worker_ng'
 gem 'jquery-rails'
 gem 'sass-rails', '~> 4.0.0'
-gem 'twilio-ruby'
+gem 'twitter'
 gem 'uglifier', '>= 1.3.0'
 
 group :development do
