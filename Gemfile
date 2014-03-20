@@ -13,11 +13,13 @@ gem 'haml'
 gem 'iron_mq'
 gem 'iron_worker_ng'
 gem 'jquery-rails'
+gem 'omniauth-twitter'
 gem 'sass-rails', '~> 4.0.0'
-gem 'twitter'
+gem 'twitter', '>= 5.8'
 gem 'uglifier', '>= 1.3.0'
 
 group :development do
+  gem 'better_errors'
   gem 'guard'
   gem 'guard-rspec'
 end
