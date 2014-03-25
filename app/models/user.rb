@@ -35,7 +35,7 @@ class User < ActiveRecord::Base
   end
 
   def push_to_worker(worker, object)
-    client = IronWorkerNG::Client.new
+    client = IronWorkerNG::Client.new(token: ENV['IRON_TOKEN'], project_id: ENV['IRON_PROJECT_ID'])
     client.tasks.create(worker, {
                                   object: object,
                                   keys:
