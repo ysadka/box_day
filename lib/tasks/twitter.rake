@@ -2,50 +2,52 @@ namespace :twitter do
 
   desc "Listen and send to worker"
 
-  def twitter
-    if provider == 'twitter'
-      config = {
-        consumer_key: ENV['TWITTER_KEY'],
-        consumer_secret: ENV['TWITTER_SECRET'],
-        access_token: current_user.oauth_token,
-        access_token_secret: current_user.oauth_secret
-      }
+  task :stream => :environment do
+    @current_user = User.find_by(username: 'getiron')
+    @iron_client = IronWorkerNG::Client.new(token: ENV['IRON_TOKEN'], project_id: ENV['IRON_PROJECT_ID'])
+    @config = {
+      consumer_key: ENV['TWITTER_KEY'],
+      consumer_secret: ENV['TWITTER_SECRET'],
+      access_token: @current_user.oauth_token,
+      access_token_secret: @current_user.oauth_secret
+    }
 
-      @client ||= Twitter::Streaming::Client.new(config)
+    if @current_user.provider == 'twitter'
+      @client ||= Twitter::Streaming::Client.new(@config)
     end
-  end
 
-  def push_to_worker(worker, object)
-    client = IronWorkerNG::Client.new(token: ENV['IRON_TOKEN'], project_id: ENV['IRON_PROJECT_ID'])
-    client.tasks.create(worker, {
-                                  object: object,
-                                  keys:
-                                    {
-                                      consumer_key: ENV['TWITTER_KEY'],
-                                      consumer_secret: ENV['TWITTER_SECRET'],
-                                      access_token: oauth_token,
-                                      access_token_secret: oauth_secret
-                                    }
-                                },
-                        priority: 2
-                        )
-  end
-
-  def get_hashtag
     topic = ENV['TWITTER_TOPIC']
-    twitter.filter(track: topic) do |obj|
-      if obj.is_a?(Twitter::Tweet)
+    @client.filter(track: topic) do |obj|
+      if obj.is_a?(Twitter::Tweet) && obj.to_h[:entities][:media]
         Thread.new do
-          tweet = Tweet.create(
-              body: obj.text,
-              username: obj.user.screen_name,
-              attached_photo: obj.to_h[:entities][:media][0][:media_url_https]
-          )
+          begin
+            tweet = Tweet.create(
+                body: obj.text,
+                username: obj.user.screen_name,
+                attached_photo: obj.to_h[:entities][:media][0][:media_url_https]
+            )
+            p 'Tweet Created'
+
+            task_id = @iron_client.tasks.create('irontweet',
+                                {
+                                  object: obj,
+                                  keys: @config
+                                },
+                                priority: 2
+                                )
+            p "pushed @#{tweet.username} tweet to worker :)"
+
+            tweet.update_attribute(:replied, true)
+            tweet.save
+            p "Replied to @#{tweet.username}"
             ActiveRecord::Base.connection.close
-          push_to_worker('irontweet', obj)
-          tweet.update_attribute(replied, true)
-          tweet.save
+
+          rescue Exception => e
+            p e
+          end
         end
+      elsif obj == Twitter::Streaming::StallWarning || obj.is_a?(Twitter::Streaming::StallWarning)
+        p "*"*20 + "Falling behind!" + "*"*20
       end
     end
   end
