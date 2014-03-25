@@ -8,8 +8,5 @@
 <% end %>
 
 <% if current_user %>
-
-  <% current_user.twitter.mentions_timeline.each do |tweet| %>
-    <li>  <%= tweet.text %> </li>
-  <% end %>
+  <% current_user.get_hashtag %>
 <% end %>

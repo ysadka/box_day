@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140319222035) do
+ActiveRecord::Schema.define(version: 20140321192215) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,11 +31,12 @@ ActiveRecord::Schema.define(version: 20140319222035) do
   end
 
   create_table "tweets", force: true do |t|
-    t.string   "body",       default: "",    null: false
-    t.boolean  "replied",    default: false, null: false
-    t.string   "username",   default: "",    null: false
+    t.string   "body",           default: "",    null: false
+    t.boolean  "replied",        default: false, null: false
+    t.string   "username",       default: "",    null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "attached_photo"
   end
 
   create_table "users", force: true do |t|
