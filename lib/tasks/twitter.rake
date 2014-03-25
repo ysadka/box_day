@@ -21,8 +21,10 @@ namespace :twitter do
       if obj.is_a?(Twitter::Tweet) && obj.to_h[:entities][:media]
         Thread.new do
           begin
+            mention = obj.text.include? "@getiron"
             tweet = Tweet.create(
                 body: obj.text,
+                iron_mention: mention,
                 username: obj.user.screen_name,
                 attached_photo: obj.to_h[:entities][:media][0][:media_url_https]
             )
