@@ -34,22 +34,37 @@ class User < ActiveRecord::Base
     end
   end
 
+  def push_to_worker(worker, object)
+    client = IronWorkerNG::Client.new
+    client.tasks.create(worker, {
+                                  object: object,
+                                  keys:
+                                    {
+                                      consumer_key: ENV['TWITTER_KEY'],
+                                      consumer_secret: ENV['TWITTER_SECRET'],
+                                      access_token: oauth_token,
+                                      access_token_secret: oauth_secret
+                                    }
+                                },
+                        priority: 2
+                        )
+  end
+
   def get_hashtag
-    topic = "#ironbox"
-    @client.filter(track: topic) do |object|
-      if object.is_a?(Twitter::Tweet)
-        puts object.to_h
-
-        # Info to pull:
-        # object.text
-        # object.screen_name
-        # object.media_url_https
-
-
-        # Thread.new do
-        #   # store
-        #   # @iron_client.task_create(workername, {tweet, image_url})
-        # end
+    topic = "#ironboxdemo"
+    twitter.filter(track: topic) do |obj|
+      if obj.is_a?(Twitter::Tweet)
+        Thread.new do
+          tweet = Tweet.create(
+              body: obj.text,
+              username: obj.user.screen_name,
+              attached_photo: obj.to_h[:entities][:media][0][:media_url_https]
+          )
+            ActiveRecord::Base.connection.close
+          push_to_worker('irontweet', obj)
+          tweet.update_attribute(replied, true)
+          tweet.save
+        end
       end
     end
   end
