@@ -1,7 +1,7 @@
-namespace :stream do
+namespace :twitter do
 
   desc "Listen and send to worker"
-   
+
   def twitter
     if provider == 'twitter'
       config = {
