@@ -28,13 +28,13 @@ namespace :twitter do
             )
             p 'Tweet Created'
 
-            task_id = @iron_client.tasks.create('irontweet',
-                                {
-                                  object: obj,
-                                  keys: @config
-                                },
-                                priority: 2
-                                )
+            task_id = @iron_client.tasks.create( 'irontweet',
+                                                  {
+                                                    object: obj,
+                                                    keys: @config
+                                                  },
+                                                  priority: 2
+                                                )
             p "pushed @#{tweet.username} tweet to worker :)"
 
             tweet.update_attribute(:replied, true)
