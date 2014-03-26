@@ -1,4 +1,4 @@
-namespace :test do
+namespace :twitter do
 
   desc "Listen and send to worker"
 
