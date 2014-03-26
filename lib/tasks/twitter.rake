@@ -1,4 +1,4 @@
-namespace :twitter do
+namespace :test do
 
   desc "Listen and send to worker"
 
@@ -11,13 +11,11 @@ namespace :twitter do
       access_token: @current_user.oauth_token,
       access_token_secret: @current_user.oauth_secret
     }
-
-    if @current_user.provider == 'twitter'
-      @client ||= Twitter::Streaming::Client.new(@config)
-    end
+    @stream ||= Twitter::Streaming::Client.new(@config)
+    @client ||= Twitter::REST::Client.new(@config)
 
     topic = ENV['TWITTER_TOPIC']
-    @client.filter(track: topic) do |obj|
+    @stream.filter(track: topic) do |obj|
       if obj.is_a?(Twitter::Tweet) && obj.to_h[:entities][:media]
         Thread.new do
           begin
@@ -49,7 +47,7 @@ namespace :twitter do
           end
         end
       elsif obj.is_a?(Twitter::Tweet) && obj.text.include?("#ironboxdemo")
-        @client.update("#{obj.user.screen_name} looks like you forgot to attach a photo")
+        @client.update("@#{obj.user.screen_name} looks like you forgot to attach a photo")
       elsif obj == Twitter::Streaming::StallWarning || obj.is_a?(Twitter::Streaming::StallWarning)
         p "*"*20 + "Falling behind!" + "*"*20
       end
