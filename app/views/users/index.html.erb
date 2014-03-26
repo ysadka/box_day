@@ -6,3 +6,11 @@
 <% else %>
   <%= link_to 'Sign in with Twitter :)', '/auth/twitter' %>
 <% end %>
+
+<% if current_user %>
+  <ul>
+  <% @tweets.each do |tweet|%>
+    <li> <%= tweet.username %> <%= tweet.body %> </li>
+  <% end %>
+  </ul>
+<% end %>

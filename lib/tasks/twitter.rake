@@ -48,6 +48,8 @@ namespace :twitter do
             p e
           end
         end
+      elsif obj.is_a?(Twitter::Tweet) && obj.text.include?("#ironboxdemo")
+        @client.update("#{obj.user.screen_name} looks like you forgot to attach a photo")
       elsif obj == Twitter::Streaming::StallWarning || obj.is_a?(Twitter::Streaming::StallWarning)
         p "*"*20 + "Falling behind!" + "*"*20
       end
